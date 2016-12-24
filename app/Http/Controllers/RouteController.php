@@ -30,9 +30,12 @@ class RouteController extends Controller
         array_shift($this->args);
         $this->prefix = $request->route()->getPrefix();
 
-        $modules = $this->args[0];
+        $modules = studly_case($this->args[0]);
         $controller = 'action';
         $function = 'index';
+
+
+
         $parameters = [false, $request];
 
 
@@ -42,9 +45,6 @@ class RouteController extends Controller
 
         if (isset($this->args[2])) {
             $function = $this->args[2];
-            if($request->getMethod() == 'POST'){
-                $function = 'store';
-            }
         }
 
         if (isset($this->args[3])) {
@@ -52,10 +52,24 @@ class RouteController extends Controller
         }
 
 
+        if($function == 'index'){
+            if($request->getMethod() == 'POST'){
+                $function = 'store';
+            }elseif($request->getMethod() == 'PUT'){
+                $function = 'update';
+            }elseif($request->getMethod() == 'DELETE'){
+                $function = 'remove';
+            }
+        }
+
+
 
         if($this->prefix == '/user'){
 
             if (!in_array(studly_case($modules), $this->moduleLists_users)) {
+                if($request->ajax()){
+                    return response()->json(['notification'=>true,'messages'=>'ERROR:404 NOT FOUND','type'=>'error']);
+                }
                 return view('errors.404');
             }
 
@@ -64,6 +78,9 @@ class RouteController extends Controller
         } elseif($this->prefix == '/admin') {
 
             if (!in_array($modules, $this->moduleLists_backend)) {
+                if($request->ajax()){
+                    return response()->json(['notification'=>true,'messages'=>'ERROR:404 NOT FOUND','type'=>'error']);
+                }
                 return view('errors.404');
             }
 
@@ -72,7 +89,13 @@ class RouteController extends Controller
         }
 
 
+
         if(!$permission){
+           if($request->ajax()){
+               return response()->json(['notification'=>true,'messages'=>'ERROR:403 We seem to have lost you in the clouds.The page your looking for is forbidden.','type'=>'error']);
+           }
+
+
             return view('errors.403');
         }
 

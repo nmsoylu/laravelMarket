@@ -67,18 +67,6 @@ function listSubFolderFiles($dir){
 
     return $files;
 }
-function getGroupScopesForSuperAdmin(){
-    $scopes = \App\Permission::get()->toArray();
-    if(count($scopes)>0){
-        foreach($scopes as $scope){
-            $data[]=$scope['permission_url'];
-        }
-    } else {
-        $data[] = null;
-    }
-
-    return $data;
-}
 function permissionCheck($url){
 
   $permissions =   getGroupScopesWithPermissionUrl(Auth::user());
@@ -126,60 +114,8 @@ function getGroupScopesWithPermissionUrl($user){
 function getDefaultCompany(){
     return "{brand}-{model}-{row_id}";
 }
-function checkCustomSKU($user){
-
-    if($user['stat'] == 2){
-        $company = \App\Company::where('user_id',$user['id'])->first();
-        $sku = $company->company_sku;
-    }elseif($user['stat'] == 1){
-        $company_id =  $user->profile->company_id;
-        $company = \App\Company::where('id',$company_id)->first();
-        $sku = $company->company_sku;
-    }
-
-    if($sku == ''){
-
-        return false;
-    }
-
-    return true;
-
-}
-function getCompanySKU($user){
-    if($user['stat'] == 2){
-        $company = \App\Company::where('user_id',\Auth::id())->first();
-        $sku = $company->company_sku;
-    }elseif($user['stat'] == 1){
-        $company_id =  $user->profile->company_id;
-        $company = \App\Company::where('id',$company_id)->first();
-        $sku = $company->company_sku;
-    }
-
-    if($sku == ''){
-
-        return getDefaultCompany();
-    }
-
-    return $sku;
-
-}
-function setCompanySKU($user,$sku){
-    if($user['stat'] == 2){
-        \App\Company::where('user_id',\Auth::id())->update(['company_sku'=>$sku]);
-
-    } elseif ($user['stat'] == 1){
-        $company_id =  $user->profile->company_id;
-         \App\Company::where('id',$company_id)->update(['company_sku'=>$sku]);
-    }
 
 
-
-    return $sku;
-
-}
-function saltToData($brand,$model,$row,$salt){
-    return str_replace(['{brand}','{model}','{row_id}'],[$brand,$model,$row],$salt);
-}
 function getGroupScopesWithPermissionID($user){
 
     $data = null;
@@ -231,10 +167,7 @@ function getUrl($args){
     return $url;
 }
 function getNameSpace($args){
-
-
     $namespace = implode("\\",$this->args);
-
 }
 function menuAccess($stat){
     $arr = config('module.Menus')[$stat];
@@ -329,33 +262,3 @@ function getToken($request)
     return $request->user()->toArray();
 }
 
-function getInsideMenuData($type)
-{
-
-    $data = [];
-
-    switch ($type)
-    {
-        case 'Warehouses':
-
-            $data = \Auth::user()->company->warehouses()->withCount('products')->get();
-
-            break;
-
-        case 'Vendors':
-
-
-
-            break;
-
-        case 'Marketplaces':
-
-
-
-            break;
-
-    }
-
-    return $data;
-
-}
