@@ -6,3 +6,5 @@ Homestead.yaml
 composer.lock
 /storage
 .idea
+vendor
+/vendor
